@@ -13,10 +13,14 @@ if (!JWT_SECRET) {
     throw new Error('JWT_SECRET is not set. Add it to your .env file.');
 }
 
+// How long a token stays valid. Short is safer: a stolen token stops working
+// soon. Configurable via JWT_EXPIRES_IN (e.g. 15m, 1h, 7d); defaults to 15m.
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
+
 module.exports = {
-    // Signs a payload like { username } into a token that expires in 2 hours.
+    // Signs a payload like { username } into a token that expires after JWT_EXPIRES_IN.
     generateToken: (payload) => {
-        return jwt.sign(payload, JWT_SECRET, { expiresIn: '2h' });
+        return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
     },
     // Returns the payload if the token is genuine and unexpired; otherwise throws.
     verifyToken: (token) => {

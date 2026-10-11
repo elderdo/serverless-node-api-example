@@ -16,7 +16,7 @@ A small, beginner-friendly Node.js + Express API with user registration, login, 
 | :--- | :--- | :--- | :--- |
 | `/health` | GET | none | Is the server up? |
 | `/register` | POST | none | Create an account: `{ "username", "password" }` (min 8 chars). |
-| `/login` | POST | none | Returns a JWT valid for 2 hours. |
+| `/login` | POST | none | Returns a JWT (valid 15 minutes by default; see `JWT_EXPIRES_IN`). |
 | `/me` | GET | Bearer token | Returns the logged-in username. |
 
 ## Getting Started

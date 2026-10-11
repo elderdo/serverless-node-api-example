@@ -56,7 +56,7 @@ curl -X POST http://localhost:8000/register \
 ### 3. Log in (POST)
 
 ```bash
-# Exchange your credentials for a token (a signed session pass valid 2 hours).
+# Exchange your credentials for a token (a signed session pass, valid 15 minutes by default).
 curl -X POST http://localhost:8000/login \
   -H "Content-Type: application/json" \
   -d '{"username":"alice","password":"password123"}'

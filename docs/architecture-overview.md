@@ -8,7 +8,7 @@ This project is a small **Node.js web API**. A client (a browser, `curl`, a mobi
 | :--- | :--- | :--- | :--- |
 | `/health` | GET | none | Reports that the server is up. |
 | `/register` | POST | none | Creates an account from `{ "username", "password" }` (password min 8 chars). Returns 201, or 409 if the name is taken. |
-| `/login` | POST | none | Checks the password and returns a JWT valid for 2 hours. Returns 401 on bad credentials. |
+| `/login` | POST | none | Checks the password and returns a JWT (valid 15 minutes by default; see `JWT_EXPIRES_IN`). Returns 401 on bad credentials. |
 | `/me` | GET | Bearer token | Example protected route; returns the logged-in username. |
 
 Try it (see [using-curl.md](using-curl.md) for installing curl and an explanation of each flag):

@@ -21,6 +21,7 @@ Then fill in the values below.
 | `PORT` | no (default 3000) | [server.js](../server.js) | Port the server listens on. |
 | `NODE_ENV` | no | general | `development` or `production`. |
 | `JWT_SECRET` | **yes** | [src/utils/token.js](../src/utils/token.js) | Secret used to sign login tokens. The app won't start without it. |
+| `JWT_EXPIRES_IN` | no (default `15m`) | [src/utils/token.js](../src/utils/token.js) | How long a login token lasts, e.g. `15m`, `1h`, `7d`. Short lifetimes limit the damage if a token is stolen; typical access tokens last 5 to 30 minutes. When it expires, the user logs in again (refresh tokens are a future step). |
 | `STRIPE_SECRET_KEY` | **yes** if `src/services/stripe.js` is loaded | [src/services/stripe.js](../src/services/stripe.js) | Stripe API key. Use a `sk_test_...` key from the Stripe dashboard (Developers, API keys). |
 | `DATABASE_URL` | yes, if `src/db/connect.js` is loaded | [src/db/connect.js](../src/db/connect.js) | PostgreSQL URL: `postgres://USER:PASSWORD@HOST:5432/DATABASE`. |
 | `AWS_REGION` | no (default us-east-1) | [src/config/aws.js](../src/config/aws.js) | AWS region. |

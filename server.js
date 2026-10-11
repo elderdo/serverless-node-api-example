@@ -1,71 +1,82 @@
 // 1. ENVIRONMENT CONFIGURATION
-// This loads your hidden ".env" file. It processes variables like your PORT=8000
-// and database strings, making them safely accessible via "process.env".
+// Loads the private ".env" file into process.env (PORT, JWT_SECRET, ...).
 require("dotenv").config();
 
-// 2. IMPORT FRAMEWORKS & FILES
-// Express is a minimalist framework used to build web servers and APIs in Node.js.
+// 2. IMPORTS
 const express = require("express");
+const { handleRegister, handleLogin, AuthError } = require("./src/auth-handler");
+const requireAuth = require("./src/middleware/requireAuth");
 
-// This reaches into your local "src" folder and extracts the "handleLogin" function
-// that contains your core business and token-generation logic.
-const { handleLogin } = require("./src/auth-handler");
-
-// 3. INITIALIZE THE SERVER ENGINE
-// This fires up a brand new instance of an Express web application server.
+// 3. INITIALIZE THE APP
 const app = express();
-
-// This reads your chosen port (8000) from the .env file.
-// If the .env file vanishes or lacks a port, the "||" acts as a fallback to port 3000.
 const PORT = process.env.PORT || 3000;
 
-// 4. MIDDLEWARE SETUP
-// By default, Express doesn't understand raw JSON text sent to it in request bodies.
-// This line acts as a translator, automatically parsing incoming JSON data packets
-// so your endpoints can easily read them inside "req.body".
+// 4. MIDDLEWARE
+// Parses JSON request bodies into req.body.
 app.use(express.json());
 
-// 5. ENDPOINT 1: THE HEALTH CHECK (GET Request)
-// A "GET" request means someone is asking to read or view a page.
-// When a browser visits /health, we simply reply with a quick status check and a timestamp.
+// Shared validation for register/login bodies.
+const validateCredentials = (req, res, next) => {
+  const { username, password } = req.body || {};
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username and password are required" });
+  }
+  if (typeof username !== "string" || typeof password !== "string") {
+    return res.status(400).json({ error: "Username and password must be strings" });
+  }
+  return next();
+};
+
+// Turns AuthError (409, 401) into proper responses; anything else is a 500.
+const sendError = (res, error, fallback) => {
+  if (error instanceof AuthError) {
+    return res.status(error.status).json({ error: error.message });
+  }
+  return res.status(500).json({ error: fallback });
+};
+
+// 5. ROUTES
+// GET /health - is the server up?
 app.get("/health", (req, res) => {
   res.json({ status: "UP", timestamp: new Date() });
 });
 
-// 6. ENDPOINT 2: USER LOGIN (POST Request)
-// A "POST" request means someone is securely submitting or sending data to the server.
-// The "req" (Request) object holds data coming IN from the user.
-// The "res" (Response) object holds data we are preparing to send OUT to the user.
-app.post("/login", (req, res) => {
-  // Unpack the incoming data packet to extract the "username" text submitted by the user.
-  const { username } = req.body;
-
-  // VALIDATION: If the user left the username field blank, stop immediately!
-  // Send back a HTTP 400 Bad Request error status code along with a helpful message.
-  if (!username) {
-    return res.status(400).json({ error: "Username is required" });
+// POST /register - create an account. Body: { username, password }
+app.post("/register", validateCredentials, async (req, res) => {
+  const { username, password } = req.body;
+  if (password.length < 8) {
+    return res.status(400).json({ error: "Password must be at least 8 characters" });
   }
-
-  // EXECUTION: Try to run the core login/token machine safely.
   try {
-    // Pass the username to our authentication engine to generate the secure JWT session pass.
-    const sessionData = handleLogin(username);
-
-    // Send back a successful HTTP 200 response with a JSON payload containing the session data.
-    return res.json({
-      success: true,
-      message: `User ${username} logged in successfully!`,
-      data: sessionData, // This contains the long encrypted string you saw in your terminal!
-    });
+    const user = await handleRegister(username, password);
+    return res.status(201).json({ success: true, data: user });
   } catch (error) {
-    // CRASH PROTECTION: If anything inside the handleLogin logic fails (e.g. database down),
-    // catch the error here so the entire server doesn't crash, and notify the user with a 500 error.
-    return res.status(500).json({ error: "Failed to generate auth token" });
+    return sendError(res, error, "Failed to register user");
   }
 });
 
-// 7. BOOT UP LISTENER
-// This tells the server to actually lock onto port 8000 and start listening for web traffic.
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// POST /login - exchange credentials for a JWT. Body: { username, password }
+app.post("/login", validateCredentials, async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const session = await handleLogin(username, password);
+    return res.json({ success: true, data: session });
+  } catch (error) {
+    return sendError(res, error, "Failed to log in");
+  }
 });
+
+// GET /me - example protected route. Needs "Authorization: Bearer <token>".
+app.get("/me", requireAuth, (req, res) => {
+  res.json({ username: req.user.username });
+});
+
+// 6. START THE SERVER
+// Only listen when run directly (npm start); tests import `app` without a port.
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;

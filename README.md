@@ -1,76 +1,74 @@
-# Serverless Node.js API Boilerplate & Secrets Scanner Benchmark
+# Serverless Node.js API Example
 
-A serverless backend boilerplate built with Node.js, Express, and Serverless Framework. Deploys on AWS Lambda and integrates with PostgreSQL and Stripe.
-
-This repository is configured as a secrets detection benchmark. It contains simulated credentials and mock API tokens hidden inside configurations, databases, and authentication handlers to validate the recall, precision, and performance of secrets scanning tools (such as Crenox, Gitleaks, and TruffleHog).
+A small, beginner-friendly Node.js + Express API with user registration, login, and token-protected routes. It is built as a learning project and a starting point for adding a database (PostgreSQL), payments (Stripe), and AWS Lambda deployment.
 
 ## Features
-- Serverless Architecture: Configured for AWS Lambda, API Gateway, and local testing.
-- Database Integration: Pre-configured PostgreSQL connection pools and migrations.
-- Stripe Payments: Gateway APIs ready for integration.
-- Security: Token-based user authentication and verification.
-- Scanner Testing Ground: Built-in credentials to evaluate CI/CD secret scanning pipelines.
+- **Registration and login** with bcrypt-hashed passwords.
+- **JWT authentication**: login returns a token that unlocks protected routes.
+- **Example protected route** (`GET /me`) using reusable middleware.
+- **Secrets kept out of code**: all configuration comes from `.env`.
+- **Automated tests** with Jest and supertest.
+- Stripe, PostgreSQL, and AWS modules are included but not yet wired to routes.
 
----
+## Endpoints
 
-## Verified with Crenox
-
-This benchmark repository is verified and audited using Crenox — a three-tier secrets detector.
-
-Crenox utilizes the following pipeline:
-1. Tier 1 (PATTERN): Aho-Corasick trie matching of predefined signatures.
-2. Tier 2 (ENTROPY): Shannon entropy analysis to locate high-randomness secrets (like raw hex and base64 strings).
-3. Tier 3 (CONTEXT): Context-aware suppression to eliminate false positives in code comments and environment placeholders.
-
-Crenox completes the scan of this repository in under 4 milliseconds, achieving 100% recall (detecting all 6 embedded secrets) and 100% precision (ignoring safe mock placeholders).
-
-### How to scan with Crenox:
-```bash
-crenox scan -r .
-```
-
----
-
-## Secrets Benchmark Directory (Mock Credentials Location)
-
-For security auditing and benchmark verification, the following simulated secrets are embedded within the project structure:
-
-| Secret Type | Location | Detection Mechanism | Description |
+| Endpoint | Method | Auth | Purpose |
 | :--- | :--- | :--- | :--- |
-| AWS Access Key ID | src/config/aws.js (Line 5) | Pattern Matching | Mock AWS user IAM key fallback (AKIA...). |
-| AWS Secret Access Key | src/config/aws.js (Line 6) | Shannon Entropy | Mock high-entropy AWS secret credentials. |
-| Stripe Live Secret Key | src/services/stripe.js (Line 4) | Pattern Matching | Simulated live payments secret gateway key (sk_live_...). |
-| PostgreSQL Connection String | src/db/connect.js (Line 2) | Pattern Matching / DSN | Active PostgreSQL DSN connection URL with passwords. |
-| JWT Signing Token Secret | src/utils/token.js (Line 4) | Shannon Entropy | High-entropy signing key configuration for JSON Web Tokens. |
-| GitHub Personal Access Token | src/auth-handler.js (Line 6) | Pattern Matching | Mock classic GitHub PAT token (ghp_...) in auth handler. |
-
----
+| `/health` | GET | none | Is the server up? |
+| `/register` | POST | none | Create an account: `{ "username", "password" }` (min 8 chars). |
+| `/login` | POST | none | Returns a JWT valid for 2 hours. |
+| `/me` | GET | Bearer token | Returns the logged-in username. |
 
 ## Getting Started
 
-### 1. Installation
-Clone the repository and install dependencies:
 ```bash
 npm install
+cp .env.example .env      # PowerShell: Copy-Item .env.example .env
 ```
 
-### 2. Configuration
-Copy the environment variables template:
+Open `.env` and set at least `JWT_SECRET` and `STRIPE_SECRET_KEY` (see [docs/configuration.md](docs/configuration.md) for how to generate them). Then:
+
 ```bash
-cp .env.example .env
+npm start                 # starts on http://localhost:8000 (or your PORT)
+npm test                  # runs the test suite
 ```
 
-### 3. Running Locally
-Start the server in developer mode:
+Try it:
+
 ```bash
-npm start
+curl -X POST http://localhost:8000/register -H "Content-Type: application/json" -d '{"username":"alice","password":"password123"}'
+curl -X POST http://localhost:8000/login -H "Content-Type: application/json" -d '{"username":"alice","password":"password123"}'
+curl http://localhost:8000/me -H "Authorization: Bearer <token from login>"
 ```
 
-### 4. Deploying to AWS
-Deploy the serverless package to AWS Lambda:
-```bash
-serverless deploy --stage prod
-```
+## Project Layout
+
+| Path | Role |
+| :--- | :--- |
+| [server.js](server.js) | Entry point: routes, validation, error handling. |
+| [src/auth-handler.js](src/auth-handler.js) | Registration and login logic. |
+| [src/middleware/requireAuth.js](src/middleware/requireAuth.js) | Protects routes with a bearer token. |
+| [src/utils/token.js](src/utils/token.js) | Creates and verifies JWTs. |
+| [src/db/users.js](src/db/users.js) | In-memory user store (swap for PostgreSQL later). |
+| [src/db/connect.js](src/db/connect.js) | Reads `DATABASE_URL`. |
+| [src/services/stripe.js](src/services/stripe.js) | Stripe client. |
+| [src/config/aws.js](src/config/aws.js) | AWS settings. |
+| [tests/api.test.js](tests/api.test.js) | API tests. |
+
+## Documentation
+- [Architecture overview](docs/architecture-overview.md): how the pieces fit together, pros and cons, next steps.
+- [Configuration guide](docs/configuration.md): every `.env` variable explained.
+- [JavaScript cheatsheet](docs/JavaScript/logic-cheatsheet.md), [understanding undefined](docs/JavaScript/understanding_undefined.md), [validation notes](docs/User-Validation/validation_and_dynamics.md).
+
+Code files carry short beginner-oriented comments explaining what each part does and why.
+
+## Current Limitations
+- Runs as a regular Express server. It is **not yet deployable to AWS Lambda** (needs an adapter such as `serverless-http` and a `serverless.yml`).
+- Users are stored in memory and are lost on restart.
+- No rate limiting, email verification, or password reset.
+
+## Secrets Scanning History
+This project began as a secrets-scanner benchmark containing fake credentials. Those hardcoded values (AWS keys, a Stripe key, a database URL, a JWT secret, and a GitHub token) have been removed from the code and from git history, because GitHub push protection blocks them and they are bad practice. If you still want to benchmark scanners, keep such fixtures in a separate repository.
 
 ## License
-MIT License. Developed for developer security benchmarking.
+MIT License.

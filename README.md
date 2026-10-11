@@ -67,9 +67,12 @@ Start the server (`npm start`) and open **http://localhost:8000/** (your `PORT`)
 - [Architecture overview](docs/architecture-overview.md): how the pieces fit together, pros and cons, next steps.
 - [Configuration guide](docs/configuration.md): every `.env` variable explained.
 - [Using curl](docs/using-curl.md): installing curl and trying each endpoint step by step.
+- [Command-line cheatsheet](docs/cli-cheatsheet.md): npm, npx, node, git, and Docker commands.
 - [Database guide](docs/database.md): do you need PostgreSQL, and how to run one locally.
 - [Testing guide](docs/testing.md): running the tests and the tools available.
 - [To-do and goals](docs/todo.md): PostgreSQL, front-end framework, hardening, AWS deploy.
+- [Priority 1 setup guide](docs/priority-1-guide.md): CORS, helmet, rate limiting, CI, cleanup, ESLint and Prettier.
+- [Video tutorials](docs/video-tutorials.md): YouTube searches and channels for each topic.
 - [JavaScript cheatsheet](docs/JavaScript/logic-cheatsheet.md), [understanding undefined](docs/JavaScript/understanding_undefined.md), [validation notes](docs/User-Validation/validation_and_dynamics.md).
 
 Code files carry short beginner-oriented comments explaining what each part does and why.

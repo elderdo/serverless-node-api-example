@@ -3,6 +3,7 @@
 Prioritized: easy first, then harder, then nice to have. Check items off with `- [x]`. Related guides: [testing.md](testing.md), [database.md](database.md), [configuration.md](configuration.md).
 
 ## Priority 1: Easy (an hour or two each)
+Step-by-step instructions: [priority-1-guide.md](priority-1-guide.md). Videos for each topic: [video-tutorials.md](video-tutorials.md)
 - [ ] Add CORS (`cors` package) so browser apps on another port can call the API
 - [ ] Add security headers (`helmet`)
 - [ ] Rate-limit `/login` and `/register` (`express-rate-limit`)

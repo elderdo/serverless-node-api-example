@@ -4,6 +4,7 @@ require("dotenv").config();
 
 // 2. IMPORTS
 const express = require("express");
+const path = require("path");
 const { handleRegister, handleLogin, AuthError } = require("./src/auth-handler");
 const requireAuth = require("./src/middleware/requireAuth");
 
@@ -14,6 +15,9 @@ const PORT = process.env.PORT || 3000;
 // 4. MIDDLEWARE
 // Parses JSON request bodies into req.body.
 app.use(express.json());
+
+// Serves the files in /public (the HTML test page at http://localhost:PORT/).
+app.use(express.static(path.join(__dirname, "public")));
 
 // Shared validation for register/login bodies.
 const validateCredentials = (req, res, next) => {

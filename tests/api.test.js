@@ -14,6 +14,12 @@ describe('API', () => {
         expect(res.body.status).toBe('UP');
     });
 
+    test('serves the HTML test page', async () => {
+        const res = await request(app).get('/');
+        expect(res.status).toBe(200);
+        expect(res.text).toContain('API Test Page');
+    });
+
     test('register, login, and access protected route', async () => {
         expect((await request(app).post('/register').send(creds)).status).toBe(201);
         const login = await request(app).post('/login').send(creds);

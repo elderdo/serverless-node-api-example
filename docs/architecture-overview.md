@@ -11,12 +11,15 @@ This project is a small **Node.js web API**. A client (a browser, `curl`, a mobi
 | `/login` | POST | none | Checks the password and returns a JWT valid for 2 hours. Returns 401 on bad credentials. |
 | `/me` | GET | Bearer token | Example protected route; returns the logged-in username. |
 
-Try it:
+Try it (see [using-curl.md](using-curl.md) for installing curl and an explanation of each flag):
 
 ```bash
 npm start
+# 1. Create an account (-X POST = send data, -H = header, -d = the JSON body)
 curl -X POST http://localhost:8000/register -H "Content-Type: application/json" -d '{"username":"alice","password":"password123"}'
+# 2. Log in; the response contains a token (your session pass)
 curl -X POST http://localhost:8000/login -H "Content-Type: application/json" -d '{"username":"alice","password":"password123"}'
+# 3. Call a protected route by sending the token in the Authorization header
 curl http://localhost:8000/me -H "Authorization: Bearer <token from login>"
 ```
 

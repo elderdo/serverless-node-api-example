@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API Test Page</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+    fieldset { margin-bottom: 1rem; }
+    input { margin: 0.25rem 0; padding: 0.4rem; width: 100%; box-sizing: border-box; }
+    button { padding: 0.4rem 1rem; margin-top: 0.25rem; }
+    pre { background: #f4f4f4; padding: 0.75rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <h1>API Test Page</h1>
+  <p>Plain HTML + JavaScript. No framework or build step. Each button sends a request to this server and shows the response below.</p>
+
+  <fieldset>
+    <legend>1. Health check (GET /health)</legend>
+    <button id="health">Check health</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>2. Register / 3. Log in</legend>
+    <label>Username <input id="username" value="alice"></label>
+    <label>Password (min 8 characters) <input id="password" type="password" value="password123"></label>
+    <button id="register">Register (POST /register)</button>
+    <button id="login">Log in (POST /login)</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>4. Protected route (GET /me)</legend>
+    <p>The token from a successful login is saved here automatically.</p>
+    <label>Token <input id="token" placeholder="Log in first"></label>
+    <button id="me">Call /me</button>
+  </fieldset>
+
+  <h2>Response</h2>
+  <pre id="output">Nothing yet.</pre>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    // Sends a request and prints the HTTP status plus the JSON body.
+    async function call(method, path, body, token) {
+      const headers = {};
+      if (body) headers["Content-Type"] = "application/json";
+      if (token) headers["Authorization"] = "Bearer " + token;
+      try {
+        const res = await fetch(path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+        const data = await res.json();
+        $("output").textContent = `${method} ${path}\nStatus: ${res.status}\n\n` + JSON.stringify(data, null, 2);
+        return data;
+      } catch (err) {
+        $("output").textContent = "Request failed: " + err.message;
+      }
+    }
+
+    const credentials = () => ({ username: $("username").value, password: $("password").value });
+
+    $("health").onclick = () => call("GET", "/health");
+    $("register").onclick = () => call("POST", "/register", credentials());
+    $("login").onclick = async () => {
+      const data = await call("POST", "/login", credentials());
+      if (data && data.data && data.data.token) $("token").value = data.data.token;
+    };
+    $("me").onclick = () => call("GET", "/me", null, $("token").value);
+  </script>
+</body>
+</html>

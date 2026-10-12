@@ -1,8 +1,11 @@
 # Serverless Node.js API Example
 
+![Tests](https://github.com/elderdo/serverless-node-api-example/actions/workflows/test.yml/badge.svg)
+
 A small, beginner-friendly Node.js + Express API with user registration, login, and token-protected routes. It is built as a learning project and a starting point for adding a database (PostgreSQL), payments (Stripe), and AWS Lambda deployment.
 
 ## Features
+
 - **Registration and login** with bcrypt-hashed passwords.
 - **JWT authentication**: login returns a token that unlocks protected routes.
 - **Example protected route** (`GET /me`) using reusable middleware.
@@ -12,12 +15,12 @@ A small, beginner-friendly Node.js + Express API with user registration, login, 
 
 ## Endpoints
 
-| Endpoint | Method | Auth | Purpose |
-| :--- | :--- | :--- | :--- |
-| `/health` | GET | none | Is the server up? |
-| `/register` | POST | none | Create an account: `{ "username", "password" }` (min 8 chars). |
-| `/login` | POST | none | Returns a JWT (valid 15 minutes by default; see `JWT_EXPIRES_IN`). |
-| `/me` | GET | Bearer token | Returns the logged-in username. |
+| Endpoint    | Method | Auth         | Purpose                                                            |
+| :---------- | :----- | :----------- | :----------------------------------------------------------------- |
+| `/health`   | GET    | none         | Is the server up?                                                  |
+| `/register` | POST   | none         | Create an account: `{ "username", "password" }` (min 8 chars).     |
+| `/login`    | POST   | none         | Returns a JWT (valid 15 minutes by default; see `JWT_EXPIRES_IN`). |
+| `/me`       | GET    | Bearer token | Returns the logged-in username.                                    |
 
 ## Getting Started
 
@@ -50,20 +53,21 @@ Start the server (`npm start`) and open **http://localhost:8000/** (your `PORT`)
 
 ## Project Layout
 
-| Path | Role |
-| :--- | :--- |
-| [server.js](server.js) | Entry point: routes, validation, error handling. |
-| [src/auth-handler.js](src/auth-handler.js) | Registration and login logic. |
-| [src/middleware/requireAuth.js](src/middleware/requireAuth.js) | Protects routes with a bearer token. |
-| [src/utils/token.js](src/utils/token.js) | Creates and verifies JWTs. |
-| [src/db/users.js](src/db/users.js) | In-memory user store (swap for PostgreSQL later). |
-| [src/db/connect.js](src/db/connect.js) | Reads `DATABASE_URL`. |
-| [src/services/stripe.js](src/services/stripe.js) | Stripe client. |
-| [src/config/aws.js](src/config/aws.js) | AWS settings. |
-| [public/index.html](public/index.html) | Browser test page (plain HTML). |
-| [tests/api.test.js](tests/api.test.js) | API tests. |
+| Path                                                           | Role                                              |
+| :------------------------------------------------------------- | :------------------------------------------------ |
+| [server.js](server.js)                                         | Entry point: routes, validation, error handling.  |
+| [src/auth-handler.js](src/auth-handler.js)                     | Registration and login logic.                     |
+| [src/middleware/requireAuth.js](src/middleware/requireAuth.js) | Protects routes with a bearer token.              |
+| [src/utils/token.js](src/utils/token.js)                       | Creates and verifies JWTs.                        |
+| [src/db/users.js](src/db/users.js)                             | In-memory user store (swap for PostgreSQL later). |
+| [src/db/connect.js](src/db/connect.js)                         | Reads `DATABASE_URL`.                             |
+| [src/services/stripe.js](src/services/stripe.js)               | Stripe client.                                    |
+| [src/config/aws.js](src/config/aws.js)                         | AWS settings.                                     |
+| [public/index.html](public/index.html)                         | Browser test page (plain HTML).                   |
+| [tests/api.test.js](tests/api.test.js)                         | API tests.                                        |
 
 ## Documentation
+
 - [Architecture overview](docs/architecture-overview.md): how the pieces fit together, pros and cons, next steps.
 - [Configuration guide](docs/configuration.md): every `.env` variable explained.
 - [Using curl](docs/using-curl.md): installing curl and trying each endpoint step by step.
@@ -78,12 +82,15 @@ Start the server (`npm start`) and open **http://localhost:8000/** (your `PORT`)
 Code files carry short beginner-oriented comments explaining what each part does and why.
 
 ## Current Limitations
+
 - Runs as a regular Express server. It is **not yet deployable to AWS Lambda** (needs an adapter such as `serverless-http` and a `serverless.yml`).
 - Users are stored in memory and are lost on restart. **PostgreSQL is not needed to run the app today.** See [docs/database.md](docs/database.md) for when and how to set it up locally.
 - No rate limiting, email verification, or password reset.
 
 ## Secrets Scanning History
+
 This project began as a secrets-scanner benchmark containing fake credentials. Those hardcoded values (AWS keys, a Stripe key, a database URL, a JWT secret, and a GitHub token) have been removed from the code and from git history, because GitHub push protection blocks them and they are bad practice. If you still want to benchmark scanners, keep such fixtures in a separate repository.
 
 ## License
+
 MIT License.

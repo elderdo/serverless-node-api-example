@@ -1,0 +1,48 @@
+# The workflow's display name in the GitHub Actions tab.
+name: Tests
+
+# "on" lists the GitHub events that start this workflow.
+on:
+  # Start a workflow run when someone pushes
+  # commits to the main branch.
+  push:
+    branches: [main]
+
+  # Also start a run when a pull request is opened or updated.
+  # With no branches listed,
+  #this applies to pull requests targeting any branch.
+  pull_request:
+
+# A workflow contains one or more jobs. Jobs run on GitHub-hosted machines
+# (unless you configure your own runners).
+jobs:
+  # "test" is this job's ID; it helps identify the job in GitHub's UI.
+  test:
+    # GitHub creates a fresh Ubuntu virtual machine for this job run.
+    runs-on: ubuntu-latest
+
+    # Steps run in order on the same machine. If a step fails, later steps
+    # normally won't run.
+    steps:
+      # "uses" runs a reusable action published for GitHub Actions.
+      # This action checks out your repository so the following steps can
+      # access its files.
+      - uses: actions/checkout@v4
+
+      # Set up Node.js using another reusable GitHub Action.
+      - uses: actions/setup-node@v4
+        with:
+          # Use Node.js version 22 for the remaining steps in this job.
+          node-version: 22
+
+          # Cache npm's downloaded packages to speed up later workflow runs.
+          # This caches package data, not your project's node_modules folder.
+          cache: npm
+
+      # "run" executes a shell command on the Ubuntu machine.
+      # npm ci installs dependencies from the lockfile, which is suited to CI.
+      - run: npm ci
+
+      # Run the "test" script defined in your package.json.
+      # A non-zero exit code marks this step, and therefore the job, as failed.
+      - run: npm test

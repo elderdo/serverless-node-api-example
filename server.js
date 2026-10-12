@@ -5,14 +5,36 @@ require("dotenv").config();
 // 2. IMPORTS
 const express = require("express");
 const path = require("path");
-const { handleRegister, handleLogin, AuthError } = require("./src/auth-handler");
+const {
+  handleRegister,
+  handleLogin,
+  AuthError,
+} = require("./src/auth-handler");
 const requireAuth = require("./src/middleware/requireAuth");
+const cors = require("cors");
+const helmet = require("helmet");
 
 // 3. INITIALIZE THE APP
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // 4. MIDDLEWARE
+
+// helmet sets a bundle of HTTP response headers
+// that switch on browser protections
+// (against clickjacking, content sniffing, and so on).
+// It is one line and a standard Express practice.
+app.use(helmet());
+
+// Only these origins may call the API from a browser. Add your front end's address.
+if (process.env.CORS_ORIGIN) {
+  const allowedOrigins = process.env.CORS_ORIGIN.split(",").map((origin) =>
+    origin.trim(),
+  );
+
+  app.use(cors({ origin: allowedOrigins }));
+}
+
 // Parses JSON request bodies into req.body.
 app.use(express.json());
 
@@ -23,10 +45,14 @@ app.use(express.static(path.join(__dirname, "public")));
 const validateCredentials = (req, res, next) => {
   const { username, password } = req.body || {};
   if (!username || !password) {
-    return res.status(400).json({ error: "Username and password are required" });
+    return res
+      .status(400)
+      .json({ error: "Username and password are required" });
   }
   if (typeof username !== "string" || typeof password !== "string") {
-    return res.status(400).json({ error: "Username and password must be strings" });
+    return res
+      .status(400)
+      .json({ error: "Username and password must be strings" });
   }
   return next();
 };
@@ -49,7 +75,9 @@ app.get("/health", (req, res) => {
 app.post("/register", validateCredentials, async (req, res) => {
   const { username, password } = req.body;
   if (password.length < 8) {
-    return res.status(400).json({ error: "Password must be at least 8 characters" });
+    return res
+      .status(400)
+      .json({ error: "Password must be at least 8 characters" });
   }
   try {
     const user = await handleRegister(username, password);

@@ -12,22 +12,22 @@ curl --version
 
 On Windows PowerShell, use `curl.exe --version`. In Windows PowerShell 5.1 the plain word `curl` is an alias for a different command (`Invoke-WebRequest`), so always type `curl.exe` there.
 
-| System | How to get curl |
-| :--- | :--- |
+| System            | How to get curl                                                                             |
+| :---------------- | :------------------------------------------------------------------------------------------ |
 | **Windows 10/11** | Already installed as `C:\Windows\System32\curl.exe`. If missing: `winget install cURL.cURL` |
-| **macOS** | Already installed. Newer version: `brew install curl` |
-| **Ubuntu/Debian** | `sudo apt update && sudo apt install curl` |
-| **Fedora/RHEL** | `sudo dnf install curl` |
+| **macOS**         | Already installed. Newer version: `brew install curl`                                       |
+| **Ubuntu/Debian** | `sudo apt update && sudo apt install curl`                                                  |
+| **Fedora/RHEL**   | `sudo dnf install curl`                                                                     |
 
 "Globally" means installed system-wide so any terminal can run `curl`. The package managers above (winget, brew, apt, dnf) all do that. You don't need a per-project install, because curl is not an npm package.
 
 ## The three flags used below
 
-| Flag | Meaning |
-| :--- | :--- |
-| `-X POST` | Use the POST method (sending data). Without it, curl uses GET (reading data). |
+| Flag                 | Meaning                                                                                                                          |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| `-X POST`            | Use the POST method (sending data). Without it, curl uses GET (reading data).                                                    |
 | `-H "Header: value"` | Add an HTTP header. `Content-Type: application/json` tells the server the body is JSON, which `express.json()` needs to read it. |
-| `-d '...'` | The request body (the data you send). |
+| `-d '...'`           | The request body (the data you send).                                                                                            |
 
 ## Step by step
 
@@ -75,6 +75,21 @@ curl http://localhost:8000/me \
 # Success: {"username":"alice"}
 # No or bad token (401): {"error":"Missing bearer token"} or {"error":"Invalid or expired token"}
 ```
+
+### 5. Check your CORS settings
+
+This command sends an HTTP request to your local server:
+
+```bash
+curl -i -H "Origin: http://localhost:5173" http://localhost:8000/health
+```
+
+- `curl` makes an HTTP request.
+- `-i` includes the response’s HTTP status line and headers in the output, followed by the response body.
+- `-H "Origin: http://localhost:5173"` adds an `Origin` request header, as if the request came from a page served at that address. This is useful for checking how the server handles CORS.
+- `http://localhost:8000/health` is the URL being requested. Since no method is specified, curl uses `GET`.
+
+The `Origin` header lets you inspect the server’s CORS response headers, such as `Access-Control-Allow-Origin`. It does **not** make curl enforce browser CORS rules.
 
 ## Windows notes
 

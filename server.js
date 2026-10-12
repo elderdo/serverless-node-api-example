@@ -13,6 +13,25 @@ const {
 const requireAuth = require("./src/middleware/requireAuth");
 const cors = require("cors");
 const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+
+// Max 10 attempts per 15 minutes per IP on the auth routes.
+//
+// skip: tells the limiter to bypass its request-count
+// check when Jest runs with NODE_ENV=test.
+// It belongs in the limiter configuration,
+// not in the test file,
+// because the limiter is shared by
+// the /register and /login routes.
+//
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many attempts, please try again later" },
+  skip: () => process.env.NODE_ENV === "test",
+});
 
 // 3. INITIALIZE THE APP
 const app = express();
@@ -72,7 +91,7 @@ app.get("/health", (req, res) => {
 });
 
 // POST /register - create an account. Body: { username, password }
-app.post("/register", validateCredentials, async (req, res) => {
+app.post("/register", authLimiter, validateCredentials, async (req, res) => {
   const { username, password } = req.body;
   if (password.length < 8) {
     return res
@@ -88,7 +107,7 @@ app.post("/register", validateCredentials, async (req, res) => {
 });
 
 // POST /login - exchange credentials for a JWT. Body: { username, password }
-app.post("/login", validateCredentials, async (req, res) => {
+app.post("/login", authLimiter, validateCredentials, async (req, res) => {
   const { username, password } = req.body;
   try {
     const session = await handleLogin(username, password);
